@@ -8,7 +8,7 @@ def D_train(x, G, D, D_optimizer, criterion):
     D.zero_grad()
 
     # train discriminator on real
-    x_real, y_real = x, torch.ones(x.shape[0], 1)
+    x_real, y_real = x, torch.rand(x.shape[0], 1) * 0.2 + 0.8
     x_real, y_real = x_real.cuda(), y_real.cuda()
 
     D_output = D(x_real)
@@ -17,7 +17,7 @@ def D_train(x, G, D, D_optimizer, criterion):
 
     # train discriminator on facke
     z = torch.randn(x.shape[0], 100).cuda()
-    x_fake, y_fake = G(z), torch.zeros(x.shape[0], 1).cuda()
+    x_fake, y_fake = G(z), torch.rand(x.shape[0], 1).cuda() * 0.2 
 
     D_output =  D(x_fake)
     
@@ -52,11 +52,13 @@ def G_train(x, G, D, G_optimizer, criterion):
 
 
 def save_models(G, D, folder):
+    os.makedirs(folder, exist_ok=True)
     torch.save(G.state_dict(), os.path.join(folder,'G.pth'))
     torch.save(D.state_dict(), os.path.join(folder,'D.pth'))
 
 
-def load_model(G, folder):
-    ckpt = torch.load(os.path.join(folder,'G.pth'))
-    G.load_state_dict({k.replace('module.', ''): v for k, v in ckpt.items()})
-    return G
+def load_model(model, folder, filename):
+    ckpt_path = os.path.join(folder, filename)
+    ckpt = torch.load(ckpt_path)
+    model.load_state_dict({k.replace('module.', ''): v for k, v in ckpt.items()})
+    return model
