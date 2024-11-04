@@ -3,7 +3,7 @@ import torchvision
 import os
 import argparse
 import random
-
+import numpy as np
 
 
 from model import Generator, Discriminator
@@ -19,28 +19,37 @@ def BurnIn(G, D_star, num_samples=1000):
         max_ratio = max(max_ratio, ratio)
     return max_ratio
 
-def DiscriminatorRejectionSampling(G, D, z_batch, epsilon=1e-10, gamma=0.001):
+def DiscriminatorRejectionSampling(G, D, z_batch, epsilon=0.001):
     D_star = D
     D_star_M = BurnIn(G, D_star)
     M_bar = D_star_M
     
     samples = []
-    
-    for z in z_batch:
-        x = G(z.unsqueeze(0))  # Générer un seul échantillon
 
-        # Calculer l'acceptation
+    # Compute F(x) values for the entire batch
+    F_values = []
+    for z in z_batch:
+        x = G(z.unsqueeze(0))  # Generate a single sample
         ratio = torch.exp(D_star(x)).item()
         M_bar = max(M_bar, ratio)
         
-        # Calculer la probabilité d'acceptation
-        F = (D_star(x) - M_bar
-             - torch.log(1 - torch.exp(D_star(x) - M_bar - epsilon))
-             - gamma)
+        # Calculate F(x) without gamma for now and store it
+        F = D_star(x) - M_bar - torch.log(1 - torch.exp(D_star(x) - M_bar - epsilon))
+        F_values.append(F)
+
+    # Stack F_values to a tensor
+    F_values = torch.stack(F_values)
+
+    # Calculate gamma as the 95th percentile of F_values (sorting and indexing)
+    gamma = torch.quantile(F_values, 0.95)
+
+    # Loop again for sampling decision with gamma
+    for i, z in enumerate(z_batch):
+        x = G(z.unsqueeze(0))
+        F = F_values[i] - gamma  # Subtract gamma from stored F(x)
         p = torch.sigmoid(F).item()
-        
-        # Décision d'acceptation
-        psi = random.uniform(0, 0.2)
+
+        psi = random.uniform(0, 1)
         if psi <= p:
             samples.append(x.squeeze())
     
@@ -49,7 +58,7 @@ def DiscriminatorRejectionSampling(G, D, z_batch, epsilon=1e-10, gamma=0.001):
 
 def generate_samples_with_drs(G, D, batch_size):
     z_batch = torch.randn(batch_size, 100).cuda()
-    samples = DiscriminatorRejectionSampling(G, D, z_batch, epsilon=1e-10, gamma=0.001)
+    samples = DiscriminatorRejectionSampling(G, D, z_batch)
     return torch.stack(samples)
 
 
@@ -83,6 +92,7 @@ if __name__ == '__main__':
     n_samples = 0
     with torch.no_grad():
         while n_samples<10000:
+            print(n_samples)
             x = generate_samples_with_drs(G, D, args.batch_size)
             x = x.reshape(-1, 28, 28)
             for k in range(x.shape[0]):
