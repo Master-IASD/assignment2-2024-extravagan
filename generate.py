@@ -22,7 +22,7 @@ if __name__ == '__main__':
     mnist_dim = 784
 
     G = Generator(g_output_dim = mnist_dim).cuda()
-    G = load_model(G, 'checkpoints', 'G.pth')
+    G = load_model(G, 'checkpoints')
     G = torch.nn.DataParallel(G).cuda()
     G.eval()
     print('Model loaded.')
