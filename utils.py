@@ -13,8 +13,7 @@ def D_train(x, G, D, D_optimizer, criterion, gp_weight=10):
     
 
     # train discriminator on facke
-    # z = torch.randn(x.shape[0], 100).cuda()
-    # x_fake, y_fake = G(z), torch.zeros(x.shape[0], 1).cuda()
+    
     # z = torch.randn(x.shape[0], 100)
     # x_fake = G(z)
     # y_fake =  D(x_fake)
@@ -34,9 +33,12 @@ def D_train(x, G, D, D_optimizer, criterion, gp_weight=10):
     # D_optimizer.step()
 
     z = torch.randn(x.shape[0], 100)
+    z = torch.randn(x.shape[0], 100).cuda()
     x_fake = G(z)
     y_real = D(x)
     y_fake = D(x_fake)
+    
+    #x_fake, y_fake = G(z), torch.zeros(x.shape[0], 1).cuda()
     #loss_D = criterion(y_real, y_fake, gp_weight, gradient_penalty(D, x, x_fake))
     loss_D = criterion(y_real, y_fake, gp_weight, gradient_penalty(D, x, x_fake))
 
@@ -56,12 +58,12 @@ def G_train(x, G, D, G_optimizer, criterion):
     #=======================Train the generator=======================#
     
 
-    # z = torch.randn(x.shape[0], 100).cuda()
-    # y = torch.ones(x.shape[0], 1).cuda()
+    
     G.zero_grad()
     z = torch.randn(x.shape[0], 100)
     y = torch.ones(x.shape[0], 1)
-    
+    z = torch.randn(x.shape[0], 100).cuda()
+    y = torch.ones(x.shape[0], 1).cuda()
                  
     G_output = G(z)
     D_output = D(G_output)
