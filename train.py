@@ -49,8 +49,8 @@ if __name__ == '__main__':
     mnist_dim = 784
     G = torch.nn.DataParallel(Generator(g_output_dim = mnist_dim)).cuda()
     D = torch.nn.DataParallel(Discriminator(mnist_dim)).cuda()
-    G = torch.nn.DataParallel(Generator(g_output_dim = mnist_dim))
-    D = torch.nn.DataParallel(Discriminator(mnist_dim))
+    # G = torch.nn.DataParallel(Generator(g_output_dim = mnist_dim))
+    # D = torch.nn.DataParallel(Discriminator(mnist_dim))
     G.train()
     D.train()
     # def weights_init(m):
@@ -61,8 +61,8 @@ if __name__ == '__main__':
 
     # # Apply to generator
     # G.apply(weights_init)
-    
-    model = DataParallel(model).cuda()
+    #model = torch.nn.DataParallel(model)
+    #model = DataParallel(model).cuda()
     print('Model loaded.')
     # Optimizer 
 
