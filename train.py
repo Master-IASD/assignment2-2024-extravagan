@@ -62,7 +62,7 @@ if __name__ == '__main__':
     # # Apply to generator
     # G.apply(weights_init)
     
-    model = DataParallel(model).cuda()
+    #model = DataParallel(model).cuda()
     print('Model loaded.')
     # Optimizer 
 
