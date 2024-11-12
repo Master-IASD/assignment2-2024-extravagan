@@ -1,4 +1,3 @@
-
 import torch 
 import torchvision
 import os
@@ -21,10 +20,11 @@ if __name__ == '__main__':
     # Model Pipeline
     mnist_dim = 784
 
-    G = Generator(g_output_dim = mnist_dim).cuda()
-    G = load_model(G, 'checkpoints')
-    G = torch.nn.DataParallel(G).cuda()
-    G.eval()
+    model = Generator(g_output_dim = mnist_dim).cuda()
+    model = load_model(model, 'checkpoints')
+    model = torch.nn.DataParallel(model).cuda()
+    model.eval()
+
     print('Model loaded.')
 
 
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     with torch.no_grad():
         while n_samples<10000:
             z = torch.randn(args.batch_size, 100).cuda()
-            x = G(z)
+            x = model(z)
             x = x.reshape(args.batch_size, 28, 28)
             for k in range(x.shape[0]):
                 if n_samples<10000:
